@@ -1,0 +1,368 @@
+### =========================
+### MUSCLELAB SEED DATA
+### =========================
+
+@baseUrl = http://localhost:8080
+@password = password123
+
+
+### =========================
+### COACHES
+### =========================
+
+### Create coach Adam
+POST {{baseUrl}}/api/users/coaches
+Content-Type: application/json
+
+{
+  "username": "adamcoach",
+  "email": "adam.coach@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Adam",
+  "lastName": "Nowak",
+  "age": 32,
+  "experience": 7
+}
+
+
+### Create coach Bartek
+POST {{baseUrl}}/api/users/coaches
+Content-Type: application/json
+
+{
+  "username": "bartekcoach",
+  "email": "bartek.coach@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Bartek",
+  "lastName": "Kowalski",
+  "age": 28,
+  "experience": 4
+}
+
+
+### Create coach Ola
+POST {{baseUrl}}/api/users/coaches
+Content-Type: application/json
+
+{
+  "username": "olacoach",
+  "email": "ola.coach@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Ola",
+  "lastName": "Mazur",
+  "age": 35,
+  "experience": 10
+}
+
+
+### Create coach Tomek
+POST {{baseUrl}}/api/users/coaches
+Content-Type: application/json
+
+{
+  "username": "tomekcoach",
+  "email": "tomek.coach@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Tomek",
+  "lastName": "Lis",
+  "age": 26,
+  "experience": 3
+}
+
+
+### =========================
+### COACH SPECIALISATIONS
+### =========================
+
+### Adam specialisation
+PUT {{baseUrl}}/api/users/specialisation?specialisation=powerlifting
+Authorization: Basic adamcoach {{password}}
+
+
+### Bartek specialisation
+PUT {{baseUrl}}/api/users/specialisation?specialisation=bodybuilding
+Authorization: Basic bartekcoach {{password}}
+
+
+### Ola specialisation
+PUT {{baseUrl}}/api/users/specialisation?specialisation=mobility
+Authorization: Basic olacoach {{password}}
+
+
+### Tomek specialisation
+PUT {{baseUrl}}/api/users/specialisation?specialisation=strength
+Authorization: Basic tomekcoach {{password}}
+
+
+### =========================
+### CLIENTS
+### =========================
+
+### Create client Kacper
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "kacperclient",
+  "email": "kacper.client@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Kacper",
+  "lastName": "Ciepienka",
+  "age": 22,
+  "experience": 2
+}
+
+
+### Create client Michal
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "michalclient",
+  "email": "michal.client@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Michal",
+  "lastName": "Zielinski",
+  "age": 24,
+  "experience": 3
+}
+
+
+### Create client Julia
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "juliaclient",
+  "email": "julia.client@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Julia",
+  "lastName": "Wisniewska",
+  "age": 21,
+  "experience": 1
+}
+
+
+### Create client Pawel
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "pawelclient",
+  "email": "pawel.client@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Pawel",
+  "lastName": "Wojcik",
+  "age": 29,
+  "experience": 5
+}
+
+
+### Create client Natalia
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "nataliaclient",
+  "email": "natalia.client@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Natalia",
+  "lastName": "Kaczmarek",
+  "age": 25,
+  "experience": 2
+}
+
+
+### =========================
+### TRAINING SLOTS
+### =========================
+
+### Adam slot 1
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic adamcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-10T10:00:00",
+  "endTime": "2026-07-10T11:00:00"
+}
+
+> {%
+    client.global.set("adamSlot1", response.body.slotCode);
+%}
+
+
+### Adam slot 2
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic adamcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-10T12:00:00",
+  "endTime": "2026-07-10T13:00:00"
+}
+
+> {%
+    client.global.set("adamSlot2", response.body.slotCode);
+%}
+
+
+### Bartek slot 1
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic bartekcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-11T09:00:00",
+  "endTime": "2026-07-11T10:00:00"
+}
+
+> {%
+    client.global.set("bartekSlot1", response.body.slotCode);
+%}
+
+
+### Bartek slot 2
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic bartekcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-11T15:00:00",
+  "endTime": "2026-07-11T16:00:00"
+}
+
+> {%
+    client.global.set("bartekSlot2", response.body.slotCode);
+%}
+
+
+### Ola slot 1
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic olacoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-12T11:00:00",
+  "endTime": "2026-07-12T12:00:00"
+}
+
+> {%
+    client.global.set("olaSlot1", response.body.slotCode);
+%}
+
+
+### Ola slot 2
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic olacoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-12T18:00:00",
+  "endTime": "2026-07-12T19:00:00"
+}
+
+> {%
+    client.global.set("olaSlot2", response.body.slotCode);
+%}
+
+
+### Tomek slot 1
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic tomekcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-13T08:00:00",
+  "endTime": "2026-07-13T09:00:00"
+}
+
+> {%
+    client.global.set("tomekSlot1", response.body.slotCode);
+%}
+
+
+### Tomek slot 2
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic tomekcoach {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-07-13T17:00:00",
+  "endTime": "2026-07-13T18:00:00"
+}
+
+> {%
+    client.global.set("tomekSlot2", response.body.slotCode);
+%}
+
+
+### =========================
+### RESERVATIONS
+### =========================
+
+### Kacper reserves Adam slot 1
+POST {{baseUrl}}/api/reservations
+Authorization: Basic kacperclient {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{adamSlot1}}"
+}
+
+
+### Michal reserves Bartek slot 1
+POST {{baseUrl}}/api/reservations
+Authorization: Basic michalclient {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{bartekSlot1}}"
+}
+
+
+### Julia reserves Ola slot 1
+POST {{baseUrl}}/api/reservations
+Authorization: Basic juliaclient {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{olaSlot1}}"
+}
+
+
+### Natalia reserves Tomek slot 1
+POST {{baseUrl}}/api/reservations
+Authorization: Basic nataliaclient {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{tomekSlot1}}"
+}
+
+
+### =========================
+### FINAL CHECKS
+### =========================
+
+### Public available slots
+GET {{baseUrl}}/api/training-slots/client
+
+
+### All coaches public
+GET {{baseUrl}}/api/users/coaches
+
+
+### Adam sees his slots
+GET {{baseUrl}}/api/training-slots/coach
+Authorization: Basic adamcoach {{password}}
+
+
+### Kacper sees his reservations
+GET {{baseUrl}}/api/reservations/client
+Authorization: Basic kacperclient {{password}}
+
+
+### Adam sees his reservations
+GET {{baseUrl}}/api/reservations/coach
+Authorization: Basic adamcoach {{password}}

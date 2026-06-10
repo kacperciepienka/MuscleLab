@@ -1,0 +1,262 @@
+### =========================
+### MUSCLELAB FULL API TEST
+### =========================
+
+@baseUrl = http://localhost:8080
+@coachUsername = coach1
+@clientUsername = client1
+@password = password123
+
+
+### 1. Create COACH - public
+POST {{baseUrl}}/api/users/coaches
+Content-Type: application/json
+
+{
+  "username": "{{coachUsername}}",
+  "email": "coach1@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Adam",
+  "lastName": "Nowak",
+  "age": 30,
+  "experience": 5
+}
+
+
+### 2. Create CLIENT - public
+POST {{baseUrl}}/api/users/clients
+Content-Type: application/json
+
+{
+  "username": "{{clientUsername}}",
+  "email": "client1@gmail.com",
+  "password": "{{password}}",
+  "firstName": "Kacper",
+  "lastName": "Testowy",
+  "age": 20,
+  "experience": 1
+}
+
+
+### 3. CLIENT /me - should return client data
+GET {{baseUrl}}/api/users/clients/me
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 4. COACH /me - should return coach data
+GET {{baseUrl}}/api/users/coaches/me
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 5. Public - find coaches
+GET {{baseUrl}}/api/users/coaches
+
+
+### 6. CLIENT tries to see clients - should be 403
+GET {{baseUrl}}/api/users/clients
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 7. COACH sees clients - should be 200
+GET {{baseUrl}}/api/users/clients
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 8. COACH updates specialisation - should be 200
+PUT {{baseUrl}}/api/users/specialisation?specialisation=powerlifting
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 9. CLIENT tries update specialisation - should be 422 WrongRole
+PUT {{baseUrl}}/api/users/specialisation?specialisation=powerlifting
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 10. CLIENT changes age - should be 200
+PUT {{baseUrl}}/api/users/age?age=21
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 11. COACH creates training slot 1 - should be 201
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic {{coachUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-06-20T12:00:00",
+  "endTime": "2026-06-20T13:00:00"
+}
+
+> {%
+    client.global.set("slotCode1", response.body.slotCode);
+%}
+
+
+### 12. CLIENT tries create training slot - should be 403
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic {{clientUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-06-20T14:00:00",
+  "endTime": "2026-06-20T15:00:00"
+}
+
+
+### 13. Public - client sees available slots
+GET {{baseUrl}}/api/training-slots/client
+
+
+### 14. Public - client sees slots of selected coach
+GET {{baseUrl}}/api/training-slots/client/{{coachUsername}}
+
+
+### 15. COACH sees own training slots
+GET {{baseUrl}}/api/training-slots/coach
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 16. CLIENT makes reservation for slot 1 - should be 201 BOOKED
+POST {{baseUrl}}/api/reservations
+Authorization: Basic {{clientUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{slotCode1}}"
+}
+
+> {%
+    client.global.set("reservationCode1", response.body.reservationCode);
+%}
+
+
+### 17. COACH tries make reservation - should be 403
+POST {{baseUrl}}/api/reservations
+Authorization: Basic {{coachUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{slotCode1}}"
+}
+
+
+### 18. CLIENT sees own reservations - should include reservationCode1
+GET {{baseUrl}}/api/reservations/client
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 19. COACH sees own reservations - should include reservationCode1
+GET {{baseUrl}}/api/reservations/coach
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 20. CLIENT tries coach reservations - should be 403
+GET {{baseUrl}}/api/reservations/coach
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 21. COACH tries client reservations - should be 403
+GET {{baseUrl}}/api/reservations/client
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 22. COACH tries complete future training - should be 422
+PUT {{baseUrl}}/api/reservations/coach/complete?reservationCode={{reservationCode1}}
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 23. COACH creates training slot 2 for update test
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic {{coachUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-06-21T12:00:00",
+  "endTime": "2026-06-21T13:00:00"
+}
+
+> {%
+    client.global.set("slotCode2", response.body.slotCode);
+%}
+
+
+### 24. COACH updates slot 2 time - should be 200
+PUT {{baseUrl}}/api/training-slots/date?slotCode={{slotCode2}}&startTime=2026-06-21T14:00:00&endTime=2026-06-21T15:00:00
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 25. CLIENT tries update slot 2 time - should be 403
+PUT {{baseUrl}}/api/training-slots/date?slotCode={{slotCode2}}&startTime=2026-06-21T16:00:00&endTime=2026-06-21T17:00:00
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 26. COACH creates training slot 3 for cancel test
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic {{coachUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-06-22T12:00:00",
+  "endTime": "2026-06-22T13:00:00"
+}
+
+> {%
+    client.global.set("slotCode3", response.body.slotCode);
+%}
+
+
+### 27. COACH cancels available slot 3 - should be CANCELLED
+PUT {{baseUrl}}/api/training-slots/cancel?slotCode={{slotCode3}}
+Authorization: Basic {{coachUsername}} {{password}}
+
+
+### 28. COACH creates training slot 4 for client cancel reservation test
+POST {{baseUrl}}/api/training-slots
+Authorization: Basic {{coachUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "startTime": "2026-06-23T12:00:00",
+  "endTime": "2026-06-23T13:00:00"
+}
+
+> {%
+    client.global.set("slotCode4", response.body.slotCode);
+%}
+
+
+### 29. CLIENT makes reservation for slot 4
+POST {{baseUrl}}/api/reservations
+Authorization: Basic {{clientUsername}} {{password}}
+Content-Type: application/json
+
+{
+  "trainingSlotCode": "{{slotCode4}}"
+}
+
+> {%
+    client.global.set("reservationCode2", response.body.reservationCode);
+%}
+
+
+### 30. CLIENT cancels own reservation - should be CANCELLED and slot AVAILABLE
+PUT {{baseUrl}}/api/reservations/client/cancel?reservationCode={{reservationCode2}}
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 31. CLIENT tries cancel same reservation again - should be 422 WrongReservationStatus
+PUT {{baseUrl}}/api/reservations/client/cancel?reservationCode={{reservationCode2}}
+Authorization: Basic {{clientUsername}} {{password}}
+
+
+### 32. Public - available slots after cancellations
+GET {{baseUrl}}/api/training-slots/client
+
+
+### 33. Wrong password test - should be 401
+GET {{baseUrl}}/api/users/clients/me
+Authorization: Basic {{clientUsername}} wrongpassword
+
+
+### 34. No auth test - should be 401
+GET {{baseUrl}}/api/users/clients/me

@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuscleLab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+    <div class="brand">
+        <div class="brand-icon">ML</div>
+        <div>
+            <h1>MuscleLab</h1>
+            <p>System rezerwacji treningów personalnych</p>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <nav class="app-nav">
+        <button class="nav-button active-nav" data-view="homeView" onclick="showView('homeView', 'home')">Start</button>
+
+        <button class="nav-button guest-only" data-view="loginView" onclick="showView('loginView', 'login')">Logowanie</button>
+        <button class="nav-button guest-only" data-view="clientRegisterView" onclick="showView('clientRegisterView', 'register-client')">Rejestracja klienta</button>
+        <button class="nav-button guest-only" data-view="coachRegisterView" onclick="showView('coachRegisterView', 'register-coach')">Rejestracja trenera</button>
+
+        <button class="nav-button client-public-only" data-view="coachesView" onclick="showView('coachesView', 'coaches'); loadCoaches();">Trenerzy</button>
+        <button class="nav-button client-public-only" data-view="slotsView" onclick="showView('slotsView', 'slots'); loadAvailableSlots();">Treningi</button>
+
+        <button id="clientsNavButton" class="nav-button hidden" data-view="clientsView" onclick="showView('clientsView', 'clients'); loadClients();">Klienci</button>
+
+        <button id="clientNavButton" class="nav-button hidden" data-view="clientPanelView" onclick="showView('clientPanelView', 'client-panel'); loadClientReservations();">Panel klienta</button>
+        <button id="coachNavButton" class="nav-button hidden" data-view="coachPanelView" onclick="showView('coachPanelView', 'coach-panel'); loadCoachSlots(); loadCoachReservations();">Panel trenera</button>
+        <button id="accountNavButton" class="nav-button hidden" data-view="accountView" onclick="showView('accountView', 'account'); loadMyAccount();">Moje konto</button>
+    </nav>
+
+    <div class="user-status">
+        <span id="loggedUserText">Nie zalogowano</span>
+        <button id="logoutButton" class="secondary-button hidden" onclick="logout()">Wyloguj</button>
+    </div>
+</header>
+
+<main class="page-shell">
+
+    <!-- HOME -->
+    <section id="homeView" class="view active-view">
+        <div class="hero">
+            <div class="hero-content">
+                <span class="eyebrow">Zacznij swoją przygodę z treningiem</span>
+                <h2>Rezerwuj treningi i zarządzaj grafikiem w jednym miejscu.</h2>
+                <p>
+                    MuscleLab to aplikacja wspierająca współpracę trenera personalnego oraz klienta.
+                    System pozwala zarządzać grafikiem, rezerwować treningi,
+                    kontrolować statusy spotkań oraz rozdzielać funkcje według roli użytkownika.
+                </p>
+
+                <div class="hero-actions">
+                    <button class="guest-only" onclick="showView('loginView', 'login')">Zaloguj się</button>
+                    <button class="secondary-button client-public-only" onclick="showView('coachesView', 'coaches'); loadCoaches();">Zobacz trenerów</button>
+                    <button class="secondary-button client-public-only" onclick="showView('slotsView', 'slots'); loadAvailableSlots();">Dostępne treningi</button>
+                </div>
+            </div>
+
+            <div class="hero-card">
+                <h3>Status aplikacji</h3>
+
+                <div class="feature-row">
+                    <span>Backend</span>
+                    <strong>Spring Boot</strong>
+                </div>
+
+                <div class="feature-row">
+                    <span>Security</span>
+                    <strong>Basic Auth + BCrypt</strong>
+                </div>
+
+                <div class="feature-row">
+                    <span>Role</span>
+                    <strong>CLIENT / COACH</strong>
+                </div>
+
+                <div class="feature-row">
+                    <span>Frontend</span>
+                    <strong>HTML / CSS / JS</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Klient</h3>
+                <p>Przegląda trenerów, filtruje sloty, rezerwuje treningi i zarządza swoimi rezerwacjami.</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Trener</h3>
+                <p>Tworzy dostępne terminy, edytuje wolne sloty i obsługuje rezerwacje klientów.</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Konto</h3>
+                <p>Użytkownik może sam w pełni zarządzać swoim kontem oraz danymi na swoim koncie.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="clientsView" class="view">
+        <div class="view-header horizontal-header">
+            <div>
+                <span class="eyebrow">Baza klientów</span>
+                <h2>Klienci</h2>
+                <p>Widok dostępny dla trenera. Możesz przeglądać i filtrować klientów.</p>
+            </div>
+
+            <button onclick="loadClients()">Szukaj klientów</button>
+        </div>
+
+        <section class="card filter-card">
+            <h3>Filtry klientów</h3>
+
+            <div class="form-grid">
+                <div>
+                    <label for="clientFilterUsername">Login</label>
+                    <input id="clientFilterUsername" type="text" placeholder="np. kacper">
+                </div>
+
+                <div>
+                    <label for="clientFilterFirstName">Imię</label>
+                    <input id="clientFilterFirstName" type="text" placeholder="np. Kacper">
+                </div>
+
+                <div>
+                    <label for="clientFilterLastName">Nazwisko</label>
+                    <input id="clientFilterLastName" type="text" placeholder="np. Kowalski">
+                </div>
+
+                <div>
+                    <label for="clientFilterAgeMin">Wiek od</label>
+                    <input id="clientFilterAgeMin" type="number" placeholder="np. 18">
+                </div>
+
+                <div>
+                    <label for="clientFilterAgeMax">Wiek do</label>
+                    <input id="clientFilterAgeMax" type="number" placeholder="np. 40">
+                </div>
+
+                <div>
+                    <label for="clientFilterExperienceMin">Doświadczenie od</label>
+                    <input id="clientFilterExperienceMin" type="number" placeholder="np. 1">
+                </div>
+
+                <div>
+                    <label for="clientFilterExperienceMax">Doświadczenie do</label>
+                    <input id="clientFilterExperienceMax" type="number" placeholder="np. 10">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button onclick="loadClients()">Zastosuj filtry</button>
+                <button class="secondary-button" onclick="clearClientFilters(); loadClients();">Wyczyść</button>
+            </div>
+        </section>
+
+        <div id="clientsList" class="items-grid"></div>
+    </section>
+
+    <!-- LOGIN -->
+    <section id="loginView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Dostęp do konta</span>
+            <h2>Logowanie</h2>
+            <p>Zaloguj się jako klient albo trener. Po zalogowaniu przejdziesz na odpowiedni panel.</p>
+        </div>
+
+        <div class="auth-layout">
+            <section class="card auth-card">
+                <h3>Dane logowania</h3>
+
+                <div class="form-grid single-column">
+                    <div>
+                        <label for="loginUsername">Login</label>
+                        <input id="loginUsername" type="text" placeholder="np. kacperclient">
+                    </div>
+
+                    <div>
+                        <label for="loginPassword">Password</label>
+                        <input id="loginPassword" type="password" placeholder="np. password123">
+                    </div>
+
+                    <div>
+                        <label for="loginRole">Rola</label>
+                        <select id="loginRole">
+                            <option value="CLIENT">CLIENT</option>
+                            <option value="COACH">COACH</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="login()">Zaloguj</button>
+            </section>
+
+            <section class="card info-card">
+                <h3>Podpowiedź</h3>
+                <p>
+                    Po seedzie możesz użyć np. <strong>adamcoach / password123</strong>
+                    albo <strong>kacperclient / password123</strong>.
+                </p>
+
+                <div class="mini-list">
+                    <div>CLIENT → rezerwacje i dostępne treningi</div>
+                    <div>COACH → sloty, specjalizacja i rezerwacje</div>
+                    <div>Moje konto → edycja danych i usuwanie konta</div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- REGISTER CLIENT -->
+    <section id="clientRegisterView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Nowe konto</span>
+            <h2>Rejestracja klienta</h2>
+            <p>Jesteś klientem? Utwórz swoje konto klienta, które będzie mogło rezerwować dostępne treningi.</p>
+        </div>
+
+        <section class="card form-card">
+            <div class="form-grid">
+                <div>
+                    <label for="clientUsername">Login</label>
+                    <input id="clientUsername" type="text" placeholder="client1">
+                </div>
+
+                <div>
+                    <label for="clientEmail">Email</label>
+                    <input id="clientEmail" type="email" placeholder="client1@gmail.com">
+                </div>
+
+                <div>
+                    <label for="clientPassword">Password</label>
+                    <input id="clientPassword" type="password" placeholder="password123">
+                </div>
+
+                <div>
+                    <label for="clientFirstName">Imię</label>
+                    <input id="clientFirstName" type="text" placeholder="Kacper">
+                </div>
+
+                <div>
+                    <label for="clientLastName">Nazwisko</label>
+                    <input id="clientLastName" type="text" placeholder="Testowy">
+                </div>
+
+                <div>
+                    <label for="clientAge">Wiek</label>
+                    <input id="clientAge" type="number" placeholder="20">
+                </div>
+
+                <div>
+                    <label for="clientExperience">Doświadczenie</label>
+                    <input id="clientExperience" type="number" placeholder="1">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button onclick="registerClient()">Zarejestruj się</button>
+                <button class="secondary-button" onclick="showView('loginView', 'login')">Przejdź do logowania</button>
+            </div>
+        </section>
+    </section>
+
+    <!-- REGISTER COACH -->
+    <section id="coachRegisterView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Nowe konto</span>
+            <h2>Rejestracja trenera</h2>
+            <p>Jesteś trenerem? Utwórz swoje konto trenera, które będzie mogło dodawać i zarządzać slotami treningowymi.</p>
+        </div>
+
+        <section class="card form-card">
+            <div class="form-grid">
+                <div>
+                    <label for="coachUsername">Login</label>
+                    <input id="coachUsername" type="text" placeholder="coach1">
+                </div>
+
+                <div>
+                    <label for="coachEmail">Email</label>
+                    <input id="coachEmail" type="email" placeholder="coach1@gmail.com">
+                </div>
+
+                <div>
+                    <label for="coachPassword">Password</label>
+                    <input id="coachPassword" type="password" placeholder="password123">
+                </div>
+
+                <div>
+                    <label for="coachFirstName">Imię</label>
+                    <input id="coachFirstName" type="text" placeholder="Adam">
+                </div>
+
+                <div>
+                    <label for="coachLastName">Nazwisko</label>
+                    <input id="coachLastName" type="text" placeholder="Nowak">
+                </div>
+
+                <div>
+                    <label for="coachAge">Wiek</label>
+                    <input id="coachAge" type="number" placeholder="30">
+                </div>
+
+                <div>
+                    <label for="coachExperience">Doświadczenie</label>
+                    <input id="coachExperience" type="number" placeholder="5">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button onclick="registerCoach()">Zarejestruj się</button>
+                <button class="secondary-button" onclick="showView('loginView', 'login')">Przejdź do logowania</button>
+            </div>
+        </section>
+    </section>
+
+    <!-- COACHES -->
+    <section id="coachesView" class="view">
+        <div class="view-header horizontal-header">
+            <div>
+                <span class="eyebrow">Baza trenerów</span>
+                <h2>Trenerzy</h2>
+                <p>Przeglądaj i filtruj trenerów po loginie, imieniu, nazwisku, wieku, doświadczeniu i specjalizacji.</p>
+            </div>
+
+            <button onclick="loadCoaches()">Szukaj trenerów</button>
+        </div>
+
+        <section class="card filter-card">
+            <h3>Filtry trenerów</h3>
+
+            <div class="form-grid">
+                <div>
+                    <label for="coachFilterUsername">Login</label>
+                    <input id="coachFilterUsername" type="text" placeholder="np. adam">
+                </div>
+
+                <div>
+                    <label for="coachFilterFirstName">Imię</label>
+                    <input id="coachFilterFirstName" type="text" placeholder="np. Adam">
+                </div>
+
+                <div>
+                    <label for="coachFilterLastName">Nazwisko</label>
+                    <input id="coachFilterLastName" type="text" placeholder="np. Nowak">
+                </div>
+
+                <div>
+                    <label for="coachFilterSpecialisation">Specjalizacja</label>
+                    <input id="coachFilterSpecialisation" type="text" placeholder="np. powerlifting">
+                </div>
+
+                <div>
+                    <label for="coachFilterAgeMin">Wiek od</label>
+                    <input id="coachFilterAgeMin" type="number" placeholder="np. 25">
+                </div>
+
+                <div>
+                    <label for="coachFilterAgeMax">Wiek do</label>
+                    <input id="coachFilterAgeMax" type="number" placeholder="np. 40">
+                </div>
+
+                <div>
+                    <label for="coachFilterExperienceMin">Doświadczenie od</label>
+                    <input id="coachFilterExperienceMin" type="number" placeholder="np. 3">
+                </div>
+
+                <div>
+                    <label for="coachFilterExperienceMax">Doświadczenie do</label>
+                    <input id="coachFilterExperienceMax" type="number" placeholder="np. 10">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button onclick="loadCoaches()">Zastosuj filtry</button>
+                <button class="secondary-button" onclick="clearCoachFilters(); loadCoaches();">Wyczyść</button>
+            </div>
+        </section>
+
+        <div id="coachesList" class="items-grid"></div>
+    </section>
+
+    <!-- SLOTS -->
+    <section id="slotsView" class="view">
+        <div class="view-header horizontal-header">
+            <div>
+                <span class="eyebrow">Oferta treningów</span>
+                <h2>Dostępne treningi</h2>
+                <p>Lista wolnych treningów, które możesz zarezerwować. Możesz filtrować po trenerze, specjalizacji i dacie.</p>
+            </div>
+
+            <button onclick="loadAvailableSlots()">Znajdź trening dla siebie</button>
+        </div>
+
+        <section class="card filter-card">
+            <h3>Filtry dostępnych treningów</h3>
+
+            <div class="form-grid">
+                <div>
+                    <label for="slotFilterCoachUsername">Login trenera</label>
+                    <input id="slotFilterCoachUsername" type="text" placeholder="np. adamcoach">
+                </div>
+
+                <div>
+                    <label for="slotFilterSpecialisation">Specjalizacja</label>
+                    <input id="slotFilterSpecialisation" type="text" placeholder="np. powerlifting">
+                </div>
+
+                <div>
+                    <label for="slotFilterMinAge">Wiek trenera od</label>
+                    <input id="slotFilterMinAge" type="number" placeholder="np. 25">
+                </div>
+
+                <div>
+                    <label for="slotFilterMaxAge">Wiek trenera do</label>
+                    <input id="slotFilterMaxAge" type="number" placeholder="np. 40">
+                </div>
+
+                <div>
+                    <label for="slotFilterMinExperience">Doświadczenie od</label>
+                    <input id="slotFilterMinExperience" type="number" placeholder="np. 3">
+                </div>
+
+                <div>
+                    <label for="slotFilterMaxExperience">Doświadczenie do</label>
+                    <input id="slotFilterMaxExperience" type="number" placeholder="np. 10">
+                </div>
+
+                <div>
+                    <label for="slotFilterStartFrom">Start od</label>
+                    <input id="slotFilterStartFrom" type="datetime-local">
+                </div>
+
+                <div>
+                    <label for="slotFilterStartTo">Start do</label>
+                    <input id="slotFilterStartTo" type="datetime-local">
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button onclick="loadAvailableSlots()">Zastosuj filtry</button>
+                <button class="secondary-button" onclick="clearSlotFilters(); loadAvailableSlots();">Wyczyść</button>
+            </div>
+        </section>
+
+        <div id="availableSlots" class="items-grid"></div>
+    </section>
+
+    <!-- CLIENT PANEL -->
+    <section id="clientPanelView" class="view">
+        <div class="view-header horizontal-header">
+            <div>
+                <span class="eyebrow">Strefa klienta</span>
+                <h2>Panel klienta</h2>
+                <p>Sprawdzaj swoje rezerwacje, filtruj je i anuluj treningi.</p>
+            </div>
+
+            <button onclick="loadClientReservations()">Szukaj rezerwacji</button>
+        </div>
+
+        <div class="dashboard-layout">
+            <div class="dashboard-main">
+                <section class="card filter-card">
+                    <h3>Filtry moich rezerwacji</h3>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="clientResFilterTrainingSlotCode">Kod slotu</label>
+                            <input id="clientResFilterTrainingSlotCode" type="text" placeholder="np. AD-123...">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterCoachUsername">Login trenera</label>
+                            <input id="clientResFilterCoachUsername" type="text" placeholder="np. adamcoach">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterCoachExperienceFrom">Doświadczenie trenera od</label>
+                            <input id="clientResFilterCoachExperienceFrom" type="number" placeholder="np. 3">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterStatus">Status</label>
+                            <select id="clientResFilterStatus">
+                                <option value="">Wszystkie</option>
+                                <option value="BOOKED">ZAREZERWOWANA</option>
+                                <option value="COMPLETED">ZAKOŃCZONA</option>
+                                <option value="CANCELLED">ODWOŁANA</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterTrainingStartFrom">Trening od</label>
+                            <input id="clientResFilterTrainingStartFrom" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterTrainingStartTo">Trening do</label>
+                            <input id="clientResFilterTrainingStartTo" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterCreatedAtFrom">Utworzono od</label>
+                            <input id="clientResFilterCreatedAtFrom" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="clientResFilterCreatedAtTo">Utworzono do</label>
+                            <input id="clientResFilterCreatedAtTo" type="datetime-local">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button onclick="loadClientReservations()">Zastosuj filtry</button>
+                        <button class="secondary-button" onclick="clearClientReservationFilters(); loadClientReservations();">Wyczyść</button>
+                    </div>
+                </section>
+
+                <section class="card">
+                    <div class="section-header compact">
+                        <h3>Moje rezerwacje</h3>
+                        <button onclick="loadClientReservations()">Odśwież</button>
+                    </div>
+
+                    <div id="clientReservations" class="items-grid one-column"></div>
+                </section>
+            </div>
+
+            <aside class="dashboard-side">
+                <section class="card side-card">
+                    <h3>Szybkie akcje</h3>
+                    <p class="description">Najczęściej używane funkcje klienta.</p>
+
+                    <div class="quick-actions">
+                        <button onclick="showView('slotsView', 'slots'); loadAvailableSlots();">Zarezerwuj trening</button>
+                        <button class="secondary-button" onclick="showView('accountView', 'account'); loadMyAccount();">Edytuj konto</button>
+                        <button class="secondary-button" onclick="showView('coachesView', 'coaches'); loadCoaches();">Znajdź trenera</button>
+                    </div>
+                </section>
+
+                <section class="card side-card">
+                    <h3>Moje konto</h3>
+                    <div id="clientAccountSummary" class="account-summary">
+                        <p class="empty-text">Kliknij „Edytuj konto”, aby zobaczyć dane.</p>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </section>
+
+    <!-- COACH PANEL -->
+    <section id="coachPanelView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Strefa trenera</span>
+            <h2>Panel trenera</h2>
+            <p>Dodawaj sloty, aktualizuj specjalizację, filtruj grafik i rezerwacje klientów.</p>
+        </div>
+
+        <div class="dashboard-layout">
+            <div class="dashboard-main">
+                <div class="coach-dashboard">
+                    <section class="card">
+                        <h3>Dodaj slot treningowy</h3>
+
+                        <div class="form-grid single-column">
+                            <div>
+                                <label for="slotStartTime">Start</label>
+                                <input id="slotStartTime" type="datetime-local">
+                            </div>
+
+                            <div>
+                                <label for="slotEndTime">Koniec</label>
+                                <input id="slotEndTime" type="datetime-local">
+                            </div>
+                        </div>
+
+                        <button onclick="createTrainingSlot()">Dodaj slot</button>
+                    </section>
+
+                    <section class="card">
+                        <h3>Specjalizacja</h3>
+
+                        <label for="specialisationInput">Nowa specjalizacja</label>
+                        <input id="specialisationInput" type="text" placeholder="np. powerlifting">
+
+                        <button onclick="updateSpecialisation()">Zmień specjalizację</button>
+                    </section>
+                </div>
+
+                <section class="card filter-card">
+                    <h3>Filtry moich slotów</h3>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="coachSlotFilterStatus">Status</label>
+                            <select id="coachSlotFilterStatus">
+                                <option value="">Wszystkie</option>
+                                <option value="AVAILABLE">DOSTĘPNY</option>
+                                <option value="BOOKED">ZAREZERWOWANY</option>
+                                <option value="COMPLETED">ZAKOŃCZONY</option>
+                                <option value="CANCELLED">ODWOŁANY</option>
+                                <option value="MISSED">NIEODBYTY</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="coachSlotFilterStartFrom">Start od</label>
+                            <input id="coachSlotFilterStartFrom" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="coachSlotFilterStartTo">Start do</label>
+                            <input id="coachSlotFilterStartTo" type="datetime-local">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button onclick="loadCoachSlots()">Filtruj sloty</button>
+                        <button class="secondary-button" onclick="clearCoachSlotFilters(); loadCoachSlots();">Wyczyść</button>
+                    </div>
+                </section>
+
+                <section class="card filter-card">
+                    <h3>Filtry rezerwacji klientów</h3>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="coachResFilterClientUsername">Login klienta</label>
+                            <input id="coachResFilterClientUsername" type="text" placeholder="np. kacperclient">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterTrainingSlotCode">Kod slotu</label>
+                            <input id="coachResFilterTrainingSlotCode" type="text" placeholder="np. AD-123...">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterClientAgeFrom">Wiek klienta od</label>
+                            <input id="coachResFilterClientAgeFrom" type="number">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterClientAgeTo">Wiek klienta do</label>
+                            <input id="coachResFilterClientAgeTo" type="number">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterClientExperienceFrom">Doświadczenie klienta od</label>
+                            <input id="coachResFilterClientExperienceFrom" type="number">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterClientExperienceTo">Doświadczenie klienta do</label>
+                            <input id="coachResFilterClientExperienceTo" type="number">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterStatus">Status rezerwacji</label>
+                            <select id="coachResFilterStatus">
+                                <option value="">Wszystkie</option>
+                                <option value="BOOKED">ZAREZERWOWANA</option>
+                                <option value="COMPLETED">ZAKOŃCZONA</option>
+                                <option value="CANCELLED">ODWOŁANA</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterStartFrom">Trening od</label>
+                            <input id="coachResFilterStartFrom" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterStartTo">Trening do</label>
+                            <input id="coachResFilterStartTo" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterCreatedAtFrom">Utworzono od</label>
+                            <input id="coachResFilterCreatedAtFrom" type="datetime-local">
+                        </div>
+
+                        <div>
+                            <label for="coachResFilterCreatedAtTo">Utworzono do</label>
+                            <input id="coachResFilterCreatedAtTo" type="datetime-local">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button onclick="loadCoachReservations()">Filtruj rezerwacje</button>
+                        <button class="secondary-button" onclick="clearCoachReservationFilters(); loadCoachReservations();">Wyczyść</button>
+                    </div>
+                </section>
+
+                <div class="panel-grid">
+                    <section class="card">
+                        <div class="section-header compact">
+                            <h3>Moje sloty</h3>
+                            <button onclick="loadCoachSlots()">Odśwież</button>
+                        </div>
+
+                        <div id="coachSlots" class="items-grid one-column"></div>
+                    </section>
+
+                    <section class="card">
+                        <div class="section-header compact">
+                            <h3>Moje rezerwacje</h3>
+                            <button onclick="loadCoachReservations()">Odśwież</button>
+                        </div>
+
+                        <div id="coachReservations" class="items-grid one-column"></div>
+                    </section>
+                </div>
+            </div>
+
+            <aside class="dashboard-side">
+                <section class="card side-card">
+                    <h3>Szybkie akcje</h3>
+                    <p class="description">Najczęściej używane funkcje trenera.</p>
+
+                    <div class="quick-actions">
+                        <button onclick="showView('coachPanelView', 'coach-panel')">Dodaj slot</button>
+                        <button class="secondary-button" onclick="showView('accountView', 'account'); loadMyAccount();">Edytuj konto</button>
+                        <button class="secondary-button" onclick="loadCoachReservations()">Odśwież rezerwacje</button>
+                    </div>
+                </section>
+
+                <section class="card side-card">
+                    <h3>Moje konto</h3>
+                    <div id="coachAccountSummary" class="account-summary">
+                        <p class="empty-text">Kliknij „Edytuj konto”, aby zobaczyć dane.</p>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section id="accountView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Ustawienia</span>
+            <h2>Moje konto</h2>
+            <p>Zarządzaj swoimi danymi.</p>
+        </div>
+
+        <div class="account-layout">
+            <section class="card account-profile-card">
+                <h3>Aktualne dane</h3>
+                <div id="accountDetails" class="account-details">
+                    <p class="empty-text">Zaloguj się, aby zobaczyć dane konta.</p>
+                </div>
+
+                <button onclick="loadMyAccount()">Odśwież dane</button>
+            </section>
+
+            <section class="card">
+                <h3>Edycja danych</h3>
+
+                <div class="form-grid">
+                    <div>
+                        <label for="accountNewUsername">Nowy login</label>
+                        <input id="accountNewUsername" type="text" placeholder="np. nowylogin">
+                        <button onclick="updateUsername()">Zmień login</button>
+                    </div>
+
+                    <div>
+                        <label for="accountNewEmail">Nowy email</label>
+                        <input id="accountNewEmail" type="email" placeholder="np. nowy@email.com">
+                        <button onclick="updateEmail()">Zmień email</button>
+                    </div>
+
+                    <div>
+                        <label for="accountNewAge">Nowy wiek</label>
+                        <input id="accountNewAge" type="number" placeholder="np. 23">
+                        <button onclick="updateAge()">Zmień wiek</button>
+                    </div>
+
+                    <div>
+                        <label for="accountNewExperience">Nowe doświadczenie</label>
+                        <input id="accountNewExperience" type="number" placeholder="np. 4">
+                        <button onclick="updateExperience()">Zmień doświadczenie</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h3>Opis</h3>
+
+                <label for="accountNewBio">Nowy opis</label>
+                <textarea id="accountNewBio" placeholder="Napisz minimum 20 znaków..."></textarea>
+
+                <button onclick="updateBio()">Zmień opis</button>
+            </section>
+
+            <section id="accountCoachSpecialisationBox" class="card hidden">
+                <h3>Specjalizacja trenera</h3>
+
+                <label for="accountNewSpecialisation">Nowa specjalizacja</label>
+                <input id="accountNewSpecialisation" type="text" placeholder="np. powerlifting">
+
+                <button onclick="updateAccountSpecialisation()">Zmień specjalizację</button>
+            </section>
+
+            <section class="card">
+                <h3>Zmiana hasła</h3>
+
+                <div class="form-grid">
+                    <div>
+                        <label for="accountOldPassword">Stare hasło</label>
+                        <input id="accountOldPassword" type="password" placeholder="stare hasło">
+                    </div>
+
+                    <div>
+                        <label for="accountNewPassword">Nowe hasło</label>
+                        <input id="accountNewPassword" type="password" placeholder="nowe hasło">
+                    </div>
+                </div>
+
+                <button onclick="updatePassword()">Zmień hasło</button>
+            </section>
+
+            <section class="card danger-zone">
+                <h3>Usuń konto</h3>
+                <p class="description">Usunięcie konta jest trwałe w aktualnej bazie. Wpisz hasło, aby potwierdzić.</p>
+
+                <label for="deleteAccountPassword">Hasło</label>
+                <input id="deleteAccountPassword" type="password" placeholder="potwierdź hasło">
+
+                <button class="danger-button" onclick="deleteAccount()">Usuń konto</button>
+            </section>
+        </div>
+    </section>
+
+    <!-- DEBUG -->
+    <section id="responseView" class="view">
+        <div class="view-header">
+            <span class="eyebrow">Debug</span>
+            <h2>Odpowiedź backendu</h2>
+            <p>Tutaj widzisz ostatni JSON zwrócony przez API albo błąd.</p>
+        </div>
+
+        <section class="card">
+            <pre id="output">{}</pre>
+        </section>
+    </section>
+
+</main>
+
+<button class="floating-debug-button" onclick="showView('responseView', 'debug')">
+    KONSOLA
+</button>
+
+<script src="app.js"></script>
+</body>
+</html>
