@@ -210,27 +210,35 @@ public class UserService {
         return mapMainView(savedUser);
     }
 
-    public Object updateAge(String username, Integer age) {
-        if (age < 10 || age > 100) {
-            throw new IncorrectNewAgeException(age);
+    public Object updateAge(String username, Integer newAge) {
+        if (newAge < 10 || newAge > 100) {
+            throw new IncorrectNewAgeException(newAge);
         }
 
         User user = getUser(username);
 
-        user.setAge(age);
+        if (user.getExperience() >= newAge){
+            throw new IncorrectAgeDueToExperienceException();
+        }
+
+        user.setAge(newAge);
 
         User savedUser = userRepository.save(user);
         return mapMainView(savedUser);
     }
 
-    public Object updateExperience(String username, Integer experience) {
-        if (experience < 0 || experience > 100) {
-            throw new IncorrectNewExperienceException(experience);
+    public Object updateExperience(String username, Integer newExperience) {
+        if (newExperience < 0 || newExperience > 100) {
+            throw new IncorrectNewExperienceException(newExperience);
         }
 
         User user = getUser(username);
 
-        user.setExperience(experience);
+        if (user.getAge() <= newExperience){
+            throw new IncorrectAgeDueToExperienceException();
+        }
+
+        user.setExperience(newExperience);
 
         User savedUser = userRepository.save(user);
         return mapMainView(savedUser);

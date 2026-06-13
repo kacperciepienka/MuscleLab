@@ -9,5 +9,4 @@ class MusclelabApplicationTests {
 	@Test
 	void contextLoads() {
 	}
-
 }
