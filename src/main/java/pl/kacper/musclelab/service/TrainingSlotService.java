@@ -10,9 +10,9 @@ import pl.kacper.musclelab.dto.entity.TrainingSlotClientDTO;
 import pl.kacper.musclelab.dto.entity.TrainingSlotCoachDTO;
 import pl.kacper.musclelab.dto.filter.TrainingSlotCoachFilter;
 import pl.kacper.musclelab.dto.filter.TrainingSlotUserFilter;
+import pl.kacper.musclelab.exception.business.CantUpdateTrainingSlotTime;
 import pl.kacper.musclelab.exception.not_Found.TrainingSlotNotFoundException;
 import pl.kacper.musclelab.exception.not_Found.UserNotFoundException;
-import pl.kacper.musclelab.exception.business.CantCancelTrainingException;
 import pl.kacper.musclelab.exception.business.WrongRoleException;
 import pl.kacper.musclelab.exception.business.WrongSlotStatusException;
 import pl.kacper.musclelab.exception.validation.IncorrectUserException;
@@ -149,7 +149,7 @@ public class TrainingSlotService {
 
         if (slot.getStatus() == SlotStatus.BOOKED) {
             if (slot.getStartTime().isBefore(LocalDateTime.now().plusHours(8))) {
-                throw new TooBigDifferenceBetweenOriginalDateException();
+                throw new CantUpdateTrainingSlotTime(slotCode);
             }
 
             long startDiffMinutes = Math.abs(Duration.between(startTime, slot.getStartTime()).toMinutes());
