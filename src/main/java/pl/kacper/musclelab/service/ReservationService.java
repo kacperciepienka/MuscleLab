@@ -82,7 +82,7 @@ public class ReservationService {
                         dayEnd
                 );
 
-        if (reservationsThisDay >= 3) {
+        if (reservationsThisDay > 3) {
             throw new TooManyTrainingTodayException();
         }
 
@@ -93,7 +93,7 @@ public class ReservationService {
                         LocalDateTime.now()
                 );
 
-        if (futureReservations >= 10) {
+        if (futureReservations > 10) {
             throw new TooManyTrainingThisWeekException();
         }
 
