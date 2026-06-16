@@ -116,6 +116,7 @@ Taki podział ułatwia rozwijanie aplikacji, testowanie logiki biznesowej oraz u
 - Swagger / OpenAPI
 - pliki `.http`
 - Git / GitHub
+- Docker
 
 ---
 
@@ -273,6 +274,76 @@ Projekt można rozwinąć o:
 - wdrożenie aplikacji na serwer.
 
 ---
+## ▶️ Uruchomienie projektu
+
+### Wymagania
+
+Do uruchomienia projektu wymagane są:
+
+- Git
+- Docker Desktop
+
+Git można zainstalować z poziomu PowerShell / CMD:
+
+```bash
+winget install Git.Git
+```
+
+Docker Desktop można zainstalować z poziomu PowerShell / CMD:
+```bash
+winget install Docker.DockerDesktop
+```
+
+Poprawność instalacji można sprawdzić poleceniami:
+```bash
+git --version
+docker --version
+```
+
+---
+
+Teraz należy sklonować repozytorium i przełączyć się na folder projektu
+```bash
+git clone https://github.com/kacperciepienka/MuscleLab.git
+```
+```bash
+cd MuscleLab
+```
+
+---
+
+Uruchomienie przez docker
+```bash
+docker build -t musclelab .
+```
+```bash
+docker run -p 8080:8080 musclelab
+```
+
+---
+
+Po uruchomieniu aplikacja będzie dostępna pod adresem:
+
+```text
+http://localhost:8080
+```
+
+---
+
+Swagger
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+---
+
+Dane do H2 Database/Console
+```bash
+JDBC URL: jdbc:h2:mem:muscle-lab
+User Name: sa
+Password:
+```
 
 ## 👨‍💻 Autor
 
