@@ -38,6 +38,16 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
+
+                        // Frontend / static files
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/style.css",
+                                "/app.js",
+                                "/favicon.ico"
+                        ).permitAll()
+
                         // Swagger / OpenAPI
                         .requestMatchers(
                                 "/swagger-ui/**",
@@ -72,7 +82,6 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reservations").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.GET, "/api/reservations/client").hasRole("CLIENT")
                         .requestMatchers(HttpMethod.PUT, "/api/reservations/client/cancel").hasRole("CLIENT")
-
 
                         // reszta wymaga zalogowania
                         .anyRequest().authenticated()
