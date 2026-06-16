@@ -19,7 +19,6 @@ import pl.kacper.musclelab.exception.validation.IncorrectUserException;
 import pl.kacper.musclelab.exception.validation.TooBigDifferenceBetweenOriginalDateException;
 import pl.kacper.musclelab.exception.validation.WrongTrainingDataException;
 import pl.kacper.musclelab.mapper.create.CreateTrainingSlotMapper;
-import pl.kacper.musclelab.mapper.entity.TrainingSlotClientDTOMapper;
 import pl.kacper.musclelab.mapper.entity.TrainingSlotCoachDTOMapper;
 import pl.kacper.musclelab.model.Role;
 import pl.kacper.musclelab.model.SlotStatus;
@@ -47,9 +46,6 @@ public class TrainingSlotServiceTest {
 
     @Mock
     private CreateTrainingSlotMapper createTrainingSlotMapper;
-
-    @Mock
-    private TrainingSlotClientDTOMapper trainingSlotClientDTOMapper;
 
     @Mock
     private TrainingSlotCoachDTOMapper trainingSlotCoachDTOMapper;
@@ -151,7 +147,7 @@ public class TrainingSlotServiceTest {
         @Test
         @DisplayName("Add training slot (Fail path - Wrong role)")
         void shouldThrowWrongRoleException() {
-            String coachUsername = "pablo";
+            String coachUsername = "Pablo";
             String coachEmail = "pablo@wp.pl";
 
             LocalDateTime startTime = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);
@@ -183,7 +179,7 @@ public class TrainingSlotServiceTest {
         @Test
         @DisplayName("Add training slot (Fail path - Wrong training data)")
         void shouldThrowWrongTrainingDataExceptionBeforeToday() {
-            String coachUsername = "pablo";
+            String coachUsername = "Pablo";
             String coachEmail = "pablo@wp.pl";
 
             LocalDateTime startTime = LocalDateTime.now().minusDays(10).truncatedTo(ChronoUnit.SECONDS);
@@ -215,7 +211,7 @@ public class TrainingSlotServiceTest {
         @Test
         @DisplayName("Add training slot (Fail path - Wrong training data)")
         void shouldThrowWrongTrainingDataException() {
-            String coachUsername = "pablo";
+            String coachUsername = "Pablo";
             String coachEmail = "pablo@wp.pl";
 
             LocalDateTime startTime = LocalDateTime.now().plusDays(10).truncatedTo(ChronoUnit.SECONDS);

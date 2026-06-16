@@ -53,7 +53,7 @@ public class ReservationController {
                                                                         Authentication authentication){
 
         String coachUsername = authentication.getName();
-        return ResponseEntity.ok(reservationService.completeTrainingAsACoach(reservationCode, coachUsername));
+        return ResponseEntity.ok(reservationService.completeTrainingAsCoach(reservationCode, coachUsername));
     }
 
     // GET

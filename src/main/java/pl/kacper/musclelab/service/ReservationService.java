@@ -128,6 +128,10 @@ public class ReservationService {
         User client = userRepository.findUserByUsernameEqualsIgnoreCase(clientUsername)
                 .orElseThrow(() -> new UserNotFoundException(clientUsername));
 
+        if (client.getRole() != Role.CLIENT) {
+            throw new WrongRoleException();
+        }
+
         if (!client.getUsername().equalsIgnoreCase(reservation.getClient().getUsername())){
             throw new IncorrectUserException(client.getUsername());
         }
@@ -137,8 +141,10 @@ public class ReservationService {
             throw new WrongReservationStatus(reservation.getReservationCode());
         }
 
-        if (client.getRole() != Role.CLIENT) {
-            throw new WrongRoleException();
+        // gdy slot jest AVAILABLE to nie może być booked może być tylko BOOKED,
+        // gdy jest AVAILABLE i chcemy go anulować to do tego mamy Training Slot
+        if (reservation.getTrainingSlot().getStatus() != SlotStatus.BOOKED){
+            throw new WrongSlotStatusException(reservation.getTrainingSlot().getSlotCode());
         }
 
         if (reservation.getTrainingSlot().getStartTime().isBefore(LocalDateTime.now().plusHours(12))) {
@@ -146,8 +152,9 @@ public class ReservationService {
         }
 
         reservation.getTrainingSlot().setStatus(SlotStatus.AVAILABLE);
-        reservation.setStatus(ReservationStatus.CANCELLED);
+        trainingSlotRepository.save(reservation.getTrainingSlot());
 
+        reservation.setStatus(ReservationStatus.CANCELLED);
         Reservation savedReservation = reservationRepository.save(reservation);
         return reservationClientDTOMapper.toDto(savedReservation);
     }
@@ -159,6 +166,10 @@ public class ReservationService {
         User coach = userRepository.findUserByUsernameEqualsIgnoreCase(coachUsername)
                 .orElseThrow(() -> new UserNotFoundException(coachUsername));
 
+        if (coach.getRole() != Role.COACH) {
+            throw new WrongRoleException();
+        }
+
         if (!coach.getUsername().equalsIgnoreCase(reservation.getTrainingSlot().getCoach().getUsername())){
             throw new IncorrectUserException(coach.getUsername());
         }
@@ -167,8 +178,8 @@ public class ReservationService {
             throw new WrongReservationStatus(reservation.getReservationCode());
         }
 
-        if (coach.getRole() != Role.COACH) {
-            throw new WrongRoleException();
+        if (reservation.getTrainingSlot().getStatus() != SlotStatus.BOOKED){
+            throw new WrongSlotStatusException(reservation.getTrainingSlot().getSlotCode());
         }
 
         if (reservation.getTrainingSlot().getStartTime().isBefore(LocalDateTime.now().plusHours(12))) {
@@ -176,13 +187,15 @@ public class ReservationService {
         }
 
         reservation.getTrainingSlot().setStatus(SlotStatus.CANCELLED);
+        trainingSlotRepository.save(reservation.getTrainingSlot());
+
         reservation.setStatus(ReservationStatus.CANCELLED);
 
         Reservation savedReservation = reservationRepository.save(reservation);
         return reservationCoachDTOMapper.toDto(savedReservation);
     }
 
-    public ReservationCoachDTO completeTrainingAsACoach(String reservationCode, String coachUsername) {
+    public ReservationCoachDTO completeTrainingAsCoach(String reservationCode, String coachUsername) {
         Reservation reservation = reservationRepository.findReservationByReservationCodeEqualsIgnoreCase(reservationCode)
                 .orElseThrow(() -> new ReservationNotFoundException(reservationCode));
 
@@ -197,6 +210,10 @@ public class ReservationService {
             throw new WrongReservationStatus(reservation.getReservationCode());
         }
 
+        if (reservation.getTrainingSlot().getStatus() != SlotStatus.BOOKED){
+            throw new WrongSlotStatusException(reservation.getTrainingSlot().getSlotCode());
+        }
+
         if (coach.getRole() != Role.COACH) {
             throw new WrongRoleException();
         }
@@ -206,8 +223,9 @@ public class ReservationService {
         }
 
         reservation.getTrainingSlot().setStatus(SlotStatus.COMPLETED);
-        reservation.setStatus(ReservationStatus.COMPLETED);
+        trainingSlotRepository.save(reservation.getTrainingSlot());
 
+        reservation.setStatus(ReservationStatus.COMPLETED);
         Reservation savedReservation = reservationRepository.save(reservation);
         return reservationCoachDTOMapper.toDto(savedReservation);
     }
