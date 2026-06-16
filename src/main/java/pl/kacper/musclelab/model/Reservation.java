@@ -28,7 +28,7 @@ public class Reservation {
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "training_slot_id", nullable = false)
     private TrainingSlot trainingSlot;
 
