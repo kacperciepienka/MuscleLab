@@ -339,6 +339,10 @@ http://localhost:8080/swagger-ui/index.html
 ---
 
 Dane do H2 Database/Console
+```text
+http://localhost:8080/h2-console
+```
+
 ```bash
 JDBC URL: jdbc:h2:mem:muscle-lab
 User Name: sa
